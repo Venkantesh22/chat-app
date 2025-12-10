@@ -21,8 +21,10 @@ class CustomImage extends StatelessWidget {
   final Function()? onTap;
   final bool viewFullScreen;
   final double radius;
+  final bool isProfile;
+  final BlendMode? colorBlendMode;
   const CustomImage({
-    Key? key,
+    super.key,
     required this.path,
     this.height,
     this.width,
@@ -34,21 +36,20 @@ class CustomImage extends StatelessWidget {
     this.onTap,
     this.radius = 0,
     this.viewFullScreen = false,
-  }) : super(key: key);
+    this.isProfile = false,
+    this.colorBlendMode,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // log('${image.replaceAll('\\', '/')}',name: "IMAGE");
-    // if(p)
     return InkWell(
       borderRadius: BorderRadius.circular(radius),
       onTap: (onTap != null || viewFullScreen)
           ? () {
-              if (onTap != null) {
-                onTap!();
-              }
+              if (onTap != null) onTap!();
               if (viewFullScreen) {
-                Navigator.push(context, getCustomRoute(child: ImageGallery(images: [path])));
+                Navigator.push(context,
+                    getCustomRoute(child: ImageGallery(images: [path])));
               }
             }
           : null,
@@ -58,20 +59,18 @@ class CustomImage extends StatelessWidget {
           child: Builder(builder: (context) {
             if (path.startsWith('assets/')) {
               return _CustomAssetImage(
-                path: path,
-                fit: fit,
-                height: height,
-                width: width,
-                color: color,
-                alignment: alignment ?? Alignment.center,
-              );
+                  path: path,
+                  fit: fit,
+                  height: height,
+                  width: width,
+                  color: color,
+                  alignment: alignment ?? Alignment.center,
+                  colorBlendMode: colorBlendMode);
             }
             String url = path.replaceAll('\\', '/');
             if (!url.startsWith('http')) {
               url = AppConstants.baseUrl + url;
             }
-
-            // log(url, name: "IMAGE");
 
             return CachedNetworkImage(
               imageUrl: url.url,
@@ -83,7 +82,9 @@ class CustomImage extends StatelessWidget {
               placeholder: (context, imageUrl) {
                 return Center(
                   child: Transform(
-                    transform: placeholder != null ? Matrix4.diagonal3Values(0.75, 0.75, 1) : Matrix4.diagonal3Values(1, 1, 1),
+                    transform: placeholder != null
+                        ? Matrix4.diagonal3Values(0.75, 0.75, 1)
+                        : Matrix4.diagonal3Values(1, 1, 1),
                     alignment: Alignment.center,
                     child: Image.asset(
                       placeholder != null ? placeholder! : Assets.imagesShimmer,
@@ -95,9 +96,12 @@ class CustomImage extends StatelessWidget {
                 );
               },
               errorWidget: (context, imageUrl, stackTrace) {
-                // log('$stackTrace', name: "stackTrace");
                 return Image.asset(
-                  onError != null ? onError! : Assets.imagesPlaceholder,
+                  onError != null
+                      ? onError!
+                      : isProfile
+                          ? Assets.imagesNoProfile
+                          : Assets.imagesPlaceholder,
                   height: height,
                   width: width,
                   fit: fit,
@@ -114,14 +118,14 @@ class CustomImage extends StatelessWidget {
 
 class _CustomAssetImage extends StatelessWidget {
   const _CustomAssetImage({
-    Key? key,
     required this.path,
     this.height,
     this.width,
     this.color,
     this.fit,
     this.alignment,
-  }) : super(key: key);
+    this.colorBlendMode,
+  });
 
   final String path;
   final Color? color;
@@ -129,7 +133,7 @@ class _CustomAssetImage extends StatelessWidget {
   final double? width;
   final BoxFit? fit;
   final Alignment? alignment;
-
+  final BlendMode? colorBlendMode;
   @override
   Widget build(BuildContext context) {
     return Image(
@@ -139,6 +143,7 @@ class _CustomAssetImage extends StatelessWidget {
       width: width,
       color: color,
       alignment: alignment ?? Alignment.center,
+      colorBlendMode: colorBlendMode,
     );
   }
 }

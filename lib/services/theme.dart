@@ -14,9 +14,10 @@ const Color black = Colors.black;
 const Color white = Colors.white;
 Color grey = const Color(0xFF999999);
 Color greyText = const Color(0xFF5C5B5B);
+Color greyLight = const Color.fromARGB(255, 221, 218, 218);
 
 const Color textPrimary = Color(0xff000000);
-const Color textSecondary = Color(0xff838383);
+const Color textSecondary = Color.fromARGB(255, 204, 202, 202);
 Map<int, Color> color = const {
   50: Color.fromRGBO(255, 244, 149, .1),
   100: Color.fromRGBO(255, 244, 149, .2),

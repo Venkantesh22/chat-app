@@ -14,6 +14,10 @@ class Assets {
   /// assets/images/logo.png
   static const String imagesLogo = "assets/images/logo.png";
 
+  /// Assets for imagesNoProfile
+  /// assets/images/no-profile.png
+  static const String imagesNoProfile = "assets/images/no-profile.png";
+
   /// Assets for imagesPlaceholder
   /// assets/images/placeholder.jpg
   static const String imagesPlaceholder = "assets/images/placeholder.jpg";
