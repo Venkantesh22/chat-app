@@ -5,7 +5,7 @@ import 'package:lekra/services/constants.dart';
 import 'package:lekra/services/theme.dart';
 import 'package:lekra/views/screens/chat/chat_screen.dart';
 import 'package:lekra/views/screens/home/component/home_top_section.dart';
-import 'package:lekra/views/screens/home/component/message_container.dart';
+import 'package:lekra/views/screens/home/component/person_container.dart';
 import 'package:lekra/views/widget/text_box/app_text_box.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   navigate(
                                       context: context, page: ChatScreen());
                                 },
-                                child: const MessageContainer());
+                                child: const PersonContainer());
                           },
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 6),

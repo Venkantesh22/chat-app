@@ -4,8 +4,8 @@ import 'package:lekra/services/date_formatters_and_converters.dart';
 import 'package:lekra/services/theme.dart';
 import 'package:lekra/views/base/custom_image.dart';
 
-class MessageContainer extends StatelessWidget {
-  const MessageContainer({
+class PersonContainer extends StatelessWidget {
+  const PersonContainer({
     super.key,
   });
 

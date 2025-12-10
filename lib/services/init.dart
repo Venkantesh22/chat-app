@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:get/instance_manager.dart';
 import 'package:lekra/controllers/dashboard_controller.dart';
 import 'package:lekra/controllers/home_controller.dart';
+import 'package:lekra/controllers/meassage_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/permission_controller.dart';
@@ -22,12 +23,11 @@ class Init {
 
       Get.lazyPut(() => PermissionController());
 
-    
-
       // Get Controller's...
       Get.lazyPut(() => DashBoardController());
       Get.lazyPut(() => AuthController(authRepo: Get.find()));
       Get.lazyPut(() => HomeController());
+      Get.lazyPut(() => MassageController());
     } catch (e) {
       log('---- ${e.toString()} ----', name: "ERROR AT initialize()");
     }
