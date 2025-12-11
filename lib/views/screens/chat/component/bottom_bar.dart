@@ -6,7 +6,8 @@ import 'package:lekra/services/theme.dart';
 
 class BottomBar extends StatefulWidget {
   final TextEditingController messageController;
-  const BottomBar({super.key, required this.messageController});
+  final VoidCallback? onSend;
+  const BottomBar({super.key, required this.messageController, this.onSend});
 
   @override
   State<BottomBar> createState() => _BottomBarState();
@@ -80,7 +81,7 @@ class _BottomBarState extends State<BottomBar> {
                         ),
                         const SizedBox(width: 8),
                         GestureDetector(
-                          onTap: () {},
+                          onTap: widget.onSend,
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: const BoxDecoration(

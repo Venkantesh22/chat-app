@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:lekra/data/models/user_model.dart';
 import 'package:lekra/services/constants.dart';
 import 'package:lekra/services/date_formatters_and_converters.dart';
 import 'package:lekra/services/theme.dart';
 import 'package:lekra/views/base/custom_image.dart';
 
 class PersonContainer extends StatelessWidget {
+  final UserModel? user;
+
   const PersonContainer({
     super.key,
+    this.user,
   });
 
   @override
@@ -18,7 +22,7 @@ class PersonContainer extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
               spreadRadius: 0,
               blurRadius: 6,
               color: black.withValues(alpha: 0.1),
@@ -27,8 +31,8 @@ class PersonContainer extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const CustomImage(
-            path: "",
+          CustomImage(
+            path: user?.image ?? "",
             isProfile: true,
             height: 50,
             width: 50,
@@ -44,7 +48,7 @@ class PersonContainer extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Venkatesh",
+                      user?.name ?? "Unknown",
                       style: Helper(context).textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.w800,
                           ),
@@ -57,7 +61,7 @@ class PersonContainer extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Venkatesh jlksdkjlkjfsldjf sldjl sdjfksjdlfj sdlflsdkf sddsjfsdjflsdjflsdkfslkdjflsdkjflsdkjfsl dlsdflj ",
+                  user?.email ?? "",
                   overflow: TextOverflow.ellipsis,
                   style: Helper(context).textTheme.bodySmall?.copyWith(
                         color: greyText,

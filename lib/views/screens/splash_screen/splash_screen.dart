@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:lekra/controllers/auth_controller.dart';
 import 'package:lekra/views/screens/auth_screens/onboarding_screen.dart';
 import 'package:lekra/views/screens/home/home_screen.dart';
 import '../../../services/constants.dart';

@@ -1,13 +1,21 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:lekra/data/models/message_model.dart';
+import 'package:get/get.dart';
+import 'package:lekra/controllers/auth_controller.dart';
+import 'package:lekra/controllers/home_controller.dart';
+import 'package:lekra/data/models/user_model.dart';
+import 'package:lekra/firebase/firebase_database/massage_database.dart';
 import 'package:lekra/services/constants.dart';
+import 'package:lekra/services/date_formatters_and_converters.dart';
 import 'package:lekra/services/theme.dart';
 import 'package:lekra/views/base/custom_image.dart';
 import 'package:lekra/views/screens/chat/component/bottom_bar.dart';
-import 'package:lekra/views/screens/chat/component/meassge_container.dart';
+import 'package:random_string/random_string.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  const ChatScreen({
+    super.key,
+  });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -16,11 +24,19 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   TextEditingController messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  String? chatRoomId;
+  String? messageId;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final homeController = Get.find<HomeController>();
+      chatRoomId = await homeController.createChatRoom(
+          homeController.selectPersonForChat?.name ?? "",
+          Get.find<AuthController>().userModel?.name ?? "");
+      _scrollToBottom();
+    });
   }
 
   @override
@@ -41,6 +57,39 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     } else {
       _scrollController.jumpTo(position);
+    }
+  }
+
+  addMessage(bool sendClicked) async {
+    if (messageController.text.trim().isNotEmpty && chatRoomId != null) {
+      String message = messageController.text.trim();
+      UserModel userModel = Get.find<AuthController>().userModel ?? UserModel();
+      messageController.clear();
+      Map<String, dynamic> messageInforMap = {
+        'message': message,
+        'sendBy': userModel.name,
+        'ts': DateFormatters().hMA.format(getDateTime()),
+        'time': FieldValue.serverTimestamp(),
+        'imgUrl': userModel.image
+      };
+
+      messageId = randomAlphaNumeric(10);
+      await MassageDatabase()
+          .addMessage(chatRoomId!, messageId!, messageInforMap)
+          .then((value) {
+        Map<String, dynamic> lastMessageInfoMap = {
+          'lastMessage': message,
+          'lastMessageSendBy': userModel.name,
+          'lastMessageSendTs': DateFormatters().hMA.format(getDateTime()),
+          'time': FieldValue.serverTimestamp(),
+        };
+        MassageDatabase()
+            .updateLastMessageSend(chatRoomId!, lastMessageInfoMap);
+
+        if (sendClicked) {
+          messageController.text = "";
+        }
+      });
     }
   }
 
@@ -115,23 +164,25 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           Column(
             children: [
-              Expanded(
-                child: Container(
-                  color: Colors.transparent,
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                    itemCount: messagesList.length,
-                    itemBuilder: (context, index) {
-                      final msg = messagesList[index];
-                      return MassageContainer(messageModel: msg);
-                    },
-                    physics: const BouncingScrollPhysics(),
-                  ),
-                ),
-              ),
-              BottomBar(messageController: messageController),
+              // Expanded(
+              //   child: Container(
+              //     color: Colors.transparent,
+              //     child: ListView.builder(
+              //       controller: _scrollController,
+              //       padding:
+              //           const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              //       itemCount: messagesList.length,
+              //       itemBuilder: (context, index) {
+              //         final msg = messagesList[index];
+              //         return MassageContainer(messageModel: msg);
+              //       },
+              //       physics: const BouncingScrollPhysics(),
+              //     ),
+              //   ),
+              // ),
+              BottomBar(
+                  messageController: messageController,
+                  onSend: () => addMessage(true)),
             ],
           ),
         ],

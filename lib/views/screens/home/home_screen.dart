@@ -1,9 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:lekra/controllers/auth_controller.dart';
 import 'package:lekra/controllers/home_controller.dart';
+import 'package:lekra/data/models/user_model.dart';
+import 'package:lekra/firebase/firebase_database/massage_database.dart';
 import 'package:lekra/services/constants.dart';
 import 'package:lekra/services/theme.dart';
 import 'package:lekra/views/screens/chat/chat_screen.dart';
@@ -68,28 +69,85 @@ class _HomeScreenState extends State<HomeScreen> {
                                 controller: homeController.searchController,
                                 bgColor: greyLight,
                                 hindText: "Search a person",
+                                onChanged: (query) {
+                                  homeController.searchUser(query);
+                                },
                                 preFixWidget: const Icon(
                                   Icons.person_2_outlined,
                                   color: primaryColor,
                                 ),
                               ),
                               Expanded(
-                                child: ListView.separated(
-                                  itemBuilder: (context, index) {
-                                    return GestureDetector(
-                                        onTap: () {
-                                          navigate(
-                                              context: context,
-                                              page: ChatScreen());
+                                child: Obx(() {
+                                  if (homeController.isSearching.value) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
+
+                                  if (homeController.searchList.isEmpty) {
+                                    return Center(
+                                      child: Text(
+                                        homeController
+                                                .searchController.text.isEmpty
+                                            ? "Search for a person"
+                                            : "No users found",
+                                        style: Helper(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(color: greyText),
+                                      ),
+                                    );
+                                  }
+
+                                  return ListView.separated(
+                                    itemBuilder: (context, index) {
+                                      final user =
+                                          homeController.searchList[index];
+                                      return GestureDetector(
+                                        onTap: () async {
+                                          var chatRoomId = await homeController
+                                              .createChatRoom(
+                                                  Get.find<AuthController>()
+                                                          .userModel
+                                                          ?.name ??
+                                                      "",
+                                                  user.name ?? "");
+
+                                          Map<String, dynamic> chatInfoMap = {
+                                            'users': [
+                                              Get.find<AuthController>()
+                                                      .userModel
+                                                      ?.name ??
+                                                  "",
+                                              user.name ?? ""
+                                            ],
+                                          };
+
+                                          await MassageDatabase()
+                                              .createChatRoom(
+                                                  chatRoomId, chatInfoMap)
+                                              .then((value) {
+                                            if (value) {
+                                              homeController
+                                                  .setSelectPersonForChat(
+                                                      value: user);
+                                              navigate(
+                                                  context: context,
+                                                  page: ChatScreen());
+                                            }
+                                          });
                                         },
-                                        child: const PersonContainer());
-                                  },
-                                  separatorBuilder: (_, __) =>
-                                      const SizedBox(height: 6),
-                                  itemCount: 10,
-                                  physics:
-                                      const AlwaysScrollableScrollPhysics(),
-                                ),
+                                        child: PersonContainer(user: user),
+                                      );
+                                    },
+                                    separatorBuilder: (_, __) =>
+                                        const SizedBox(height: 6),
+                                    itemCount: homeController.searchList.length,
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                  );
+                                }),
                               ),
                             ],
                           ),
