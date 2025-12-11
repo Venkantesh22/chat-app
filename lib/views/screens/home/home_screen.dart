@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lekra/controllers/auth_controller.dart';
 import 'package:lekra/controllers/home_controller.dart';
-import 'package:lekra/data/models/user_model.dart';
 import 'package:lekra/firebase/firebase_database/massage_database.dart';
 import 'package:lekra/services/constants.dart';
 import 'package:lekra/services/theme.dart';

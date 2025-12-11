@@ -8,7 +8,7 @@ class MassageDatabase {
   Future addMessage(String charRoomId, String messageId,
       Map<String, dynamic> messageInfoMap) async {
     return await firebase
-        .collection('chatrooms')
+        .collection('Chatroom')
         .doc(charRoomId)
         .collection('chats')
         .doc(messageId)
@@ -18,7 +18,7 @@ class MassageDatabase {
   Future updateLastMessageSend(
       String charRoomId, Map<String, dynamic> lastMessageInfoMap) async {
     return await firebase
-        .collection('chatrooms')
+        .collection('Chatroom')
         .doc(charRoomId)
         .update(lastMessageInfoMap);
   }
@@ -61,5 +61,15 @@ class MassageDatabase {
       log("--createChatRoom : Error : ${e.toString()}");
       return false;
     }
+  }
+
+  Future<Stream<QuerySnapshot>> getChatRoomMessage(chatRoomId) async {
+    
+    return await firebase
+        .collection("Chatroom")
+        .doc(chatRoomId)
+        .collection("chats")
+        .orderBy('time', descending: true)
+        .snapshots();
   }
 }

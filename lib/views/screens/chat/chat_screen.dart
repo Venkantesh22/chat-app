@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,6 +12,7 @@ import 'package:lekra/services/date_formatters_and_converters.dart';
 import 'package:lekra/services/theme.dart';
 import 'package:lekra/views/base/custom_image.dart';
 import 'package:lekra/views/screens/chat/component/bottom_bar.dart';
+import 'package:lekra/views/screens/chat/component/meassge_container.dart';
 import 'package:random_string/random_string.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -27,15 +30,27 @@ class _ChatScreenState extends State<ChatScreen> {
   String? chatRoomId;
   String? messageId;
 
+  Stream? messageStream;
+  UserModel? user;
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      setState(() {
+        isLoading = true;
+      });
       final homeController = Get.find<HomeController>();
+      user = Get.find<AuthController>().userModel;
       chatRoomId = await homeController.createChatRoom(
           homeController.selectPersonForChat?.name ?? "",
           Get.find<AuthController>().userModel?.name ?? "");
+      getAndSendMessage();
       _scrollToBottom();
+      setState(() {
+        isLoading = false;
+      });
     });
   }
 
@@ -44,6 +59,11 @@ class _ChatScreenState extends State<ChatScreen> {
     messageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void getAndSendMessage() async {
+    log("---------- getAndSendMessage --------------");
+    messageStream = await MassageDatabase().getChatRoomMessage(chatRoomId);
   }
 
   void _scrollToBottom({bool animate = true}) {
@@ -102,37 +122,39 @@ class _ChatScreenState extends State<ChatScreen> {
         elevation: 0,
         backgroundColor: primaryColor,
         titleSpacing: 0,
-        title: Row(
-          children: [
-            const CustomImage(
-              path: "",
-              isProfile: true,
-              height: 40,
-              width: 40,
-              radius: 50,
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Venkatesh",
-                  style: Helper(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: white,
-                      ),
-                ),
-                Text(
-                  "Online",
-                  style: Helper(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: white.withValues(alpha: 0.9)),
-                ),
-              ],
-            ),
-          ],
-        ),
+        title: GetBuilder<HomeController>(builder: (homeController) {
+          return Row(
+            children: [
+              CustomImage(
+                path: homeController.selectPersonForChat?.image ?? "",
+                isProfile: true,
+                height: 40,
+                width: 40,
+                radius: 50,
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    homeController.selectPersonForChat?.name ?? "",
+                    style: Helper(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: white,
+                        ),
+                  ),
+                  Text(
+                    "Online",
+                    style: Helper(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: white.withValues(alpha: 0.9)),
+                  ),
+                ],
+              ),
+            ],
+          );
+        }),
         actions: [
           IconButton(
             onPressed: () {},
@@ -164,22 +186,39 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           Column(
             children: [
-              // Expanded(
-              //   child: Container(
-              //     color: Colors.transparent,
-              //     child: ListView.builder(
-              //       controller: _scrollController,
-              //       padding:
-              //           const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-              //       itemCount: messagesList.length,
-              //       itemBuilder: (context, index) {
-              //         final msg = messagesList[index];
-              //         return MassageContainer(messageModel: msg);
-              //       },
-              //       physics: const BouncingScrollPhysics(),
-              //     ),
-              //   ),
-              // ),
+              Expanded(
+                child: Container(
+                    color: Colors.transparent,
+                    child: StreamBuilder(
+                        stream: messageStream,
+                        builder: (context, AsyncSnapshot snapshot) {
+                          if (isLoading) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          return snapshot.hasData
+                              ? ListView.builder(
+                                  itemBuilder: (context, index) {
+                                    DocumentSnapshot ds =
+                                        snapshot.data.docs[index];
+                                    return MassageContainer(
+                                        message: ds['message'],
+                                        time: ds['ts'],
+                                        sendByMe: user?.name == ds['sendBy']);
+                                  },
+                                  reverse: true,
+                                  itemCount: snapshot.data.docs.length,
+                                )
+                              : Container();
+                        })),
+              ),
               BottomBar(
                   messageController: messageController,
                   onSend: () => addMessage(true)),

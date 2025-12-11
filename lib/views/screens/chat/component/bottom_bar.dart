@@ -39,14 +39,12 @@ class _BottomBarState extends State<BottomBar> {
               children: [
                 IconButton(
                   onPressed: () {
-                    // TODO: open emoji picker
                   },
                   icon: const Icon(Icons.emoji_emotions_outlined),
                   color: primaryColor,
                 ),
                 IconButton(
                   onPressed: () {
-                    // TODO: attachment picker
                   },
                   icon: const Icon(Icons.attach_file),
                   color: primaryColor,
