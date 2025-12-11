@@ -6,7 +6,8 @@ import '../../services/constants.dart';
 import '../api/api_client.dart';
 
 class AuthRepo {
-  final SharedPreferences sharedPreferences;
+ 
+ final SharedPreferences sharedPreferences;
   final ApiClient apiClient;
   AuthRepo({required this.sharedPreferences, required this.apiClient});
 
@@ -41,7 +42,6 @@ class AuthRepo {
   }
 
   Future<void> setUserToken(String token) async {
-    apiClient.updateHeader(token);
     await sharedPreferences.setString(AppConstants.token, token);
   }
 
@@ -56,8 +56,7 @@ class AuthRepo {
   bool clearSharedData() {
     sharedPreferences.remove(AppConstants.token);
     sharedPreferences.remove(AppConstants.userId);
-    apiClient.token = '';
-    apiClient.updateHeader('');
+   
     return true;
   }
 

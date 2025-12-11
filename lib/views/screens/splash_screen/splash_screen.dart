@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lekra/controllers/auth_controller.dart';
 import 'package:lekra/views/screens/auth_screens/onboarding_screen.dart';
+import 'package:lekra/views/screens/home/home_screen.dart';
 
 import '../../../services/constants.dart';
 import '../../base/custom_image.dart';
@@ -30,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (token.isNotEmpty) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } else {
       Navigator.pushReplacement(

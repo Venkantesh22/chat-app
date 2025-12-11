@@ -3,6 +3,7 @@ import 'package:get/instance_manager.dart';
 import 'package:lekra/controllers/dashboard_controller.dart';
 import 'package:lekra/controllers/home_controller.dart';
 import 'package:lekra/controllers/meassage_controller.dart';
+import 'package:lekra/data/repositories/auth_repo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/permission_controller.dart';
@@ -21,6 +22,8 @@ class Init {
           appBaseUrl: AppConstants.baseUrl,
           sharedPreferences: sharedPreferences));
 
+      Get.lazyPut(
+          () => AuthRepo(sharedPreferences: Get.find(), apiClient: Get.find()));
       Get.lazyPut(() => PermissionController());
 
       // Get Controller's...

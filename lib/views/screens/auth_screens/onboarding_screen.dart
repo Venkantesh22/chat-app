@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:lekra/firebase/firebase_auth.dart';
 import 'package:lekra/services/constants.dart';
 import 'package:lekra/services/theme.dart';
 import 'package:lekra/views/base/common_button.dart';
 import 'package:lekra/views/base/custom_image.dart';
+import 'package:lekra/views/screens/home/home_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -38,7 +40,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 CustomButton(
                   color: primaryColor,
-                  onTap: () {},
+                  onTap: () async {
+                    await FirebaseAuthService.signInWithGoogle().then((value) {
+                      if (value) {
+                        navigate(context: context, page: HomeScreen());
+                        showToast(
+                            message: "User signed in successfully!",
+                            typeCheck: value);
+                      } else {
+                        showToast(
+                            message: "Failed to sign in user.",
+                            typeCheck: value);
+                      }
+                    });
+                  },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

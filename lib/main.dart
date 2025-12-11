@@ -1,18 +1,21 @@
 import 'dart:developer';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:lekra/services/constants.dart';
 import 'package:lekra/services/theme.dart';
 import 'package:lekra/views/screens/home/home_screen.dart';
+import 'package:lekra/views/screens/splash_screen/splash_screen.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:toastification/toastification.dart';
 
 import 'services/init.dart';
-import 'views/screens/splash_screen/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Init().initialize();
+  await Firebase.initializeApp();
+
   runApp(const MyApp());
 }
 
@@ -78,8 +81,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         themeMode: ThemeMode.light,
         theme: CustomTheme.light,
         debugShowCheckedModeBanner: false,
-        home: const HomeScreen(),
-        // home: const SplashScreen(),
+        // home: const HomeScreen(),
+        home: const SplashScreen(),
       ),
     );
   }
