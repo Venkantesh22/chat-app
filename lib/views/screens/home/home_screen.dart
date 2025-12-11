@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:lekra/controllers/auth_controller.dart';
 import 'package:lekra/controllers/home_controller.dart';
 import 'package:lekra/services/constants.dart';
 import 'package:lekra/services/theme.dart';
@@ -17,67 +20,86 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authController = Get.find<AuthController>();
+      User? currentUser = FirebaseAuth.instance.currentUser;
+
+      authController.fetchProfile(currentUser?.uid ?? "");
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: primaryColor,
-      body: GetBuilder<HomeController>(
-        builder: (homeController) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                height: 60,
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: HomeTopSection(),
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: const BoxDecoration(
-                      color: white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        topRight: Radius.circular(16),
-                      )),
-                  child: Column(
+      body: GetBuilder<AuthController>(builder: (authController) {
+        return authController.isLoading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : GetBuilder<HomeController>(
+                builder: (homeController) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AppTextFieldWithHeading(
-                        controller: homeController.searchController,
-                        bgColor: greyLight,
-                        hindText: "Search a person",
-                        preFixWidget: const Icon(
-                          Icons.person_2_outlined,
-                          color: primaryColor,
-                        ),
+                      const SizedBox(
+                        height: 60,
                       ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: HomeTopSection(),
+                      ),
+                      const SizedBox(height: 12),
                       Expanded(
-                        child: ListView.separated(
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                                onTap: () {
-                                  navigate(
-                                      context: context, page: ChatScreen());
-                                },
-                                child: const PersonContainer());
-                          },
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 6),
-                          itemCount: 10,
-                          physics: const AlwaysScrollableScrollPhysics(),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          decoration: const BoxDecoration(
+                              color: white,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16),
+                              )),
+                          child: Column(
+                            children: [
+                              AppTextFieldWithHeading(
+                                controller: homeController.searchController,
+                                bgColor: greyLight,
+                                hindText: "Search a person",
+                                preFixWidget: const Icon(
+                                  Icons.person_2_outlined,
+                                  color: primaryColor,
+                                ),
+                              ),
+                              Expanded(
+                                child: ListView.separated(
+                                  itemBuilder: (context, index) {
+                                    return GestureDetector(
+                                        onTap: () {
+                                          navigate(
+                                              context: context,
+                                              page: ChatScreen());
+                                        },
+                                        child: const PersonContainer());
+                                  },
+                                  separatorBuilder: (_, __) =>
+                                      const SizedBox(height: 6),
+                                  itemCount: 10,
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
+                  );
+                },
+              );
+      }),
     );
   }
 }

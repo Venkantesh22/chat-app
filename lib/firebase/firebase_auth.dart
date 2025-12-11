@@ -8,6 +8,10 @@ import 'package:lekra/firebase/firebase_database/auth_database.dart';
 class FirebaseAuthService {
   static FirebaseAuth auth = FirebaseAuth.instance;
 
+  static Future<String?> getCurrentUser() async {
+    return await auth.currentUser?.uid;
+  }
+
   static Future<bool> signInWithGoogle() async {
     try {
       await GoogleSignIn.instance.initialize(
@@ -26,12 +30,16 @@ class FirebaseAuthService {
 
       final userCred = await auth.signInWithCredential(credential);
       final user = userCred.user;
+      final userName = user!.email!.replaceAll("@gmail.com", "");
+      final firstLetter = userName!.substring(0, 1);
       if (user != null) {
         UserModel userModel = UserModel(
           name: user.displayName,
           email: user.email,
           image: user.photoURL,
           id: user.uid,
+          userName: userName.toLowerCase(),
+          searchKey: firstLetter,
         );
 
         await AuthDatabase().addUser(userModel, user.uid);
@@ -43,9 +51,10 @@ class FirebaseAuthService {
     }
   }
 
-  Future<bool> signOut() async {
+  static Future<bool> signOut() async {
     await auth.signOut();
     await GoogleSignIn.instance.signOut();
+
     return true;
   }
 }

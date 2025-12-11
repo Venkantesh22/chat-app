@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'package:get/instance_manager.dart';
-import 'package:lekra/controllers/dashboard_controller.dart';
 import 'package:lekra/controllers/home_controller.dart';
 import 'package:lekra/controllers/meassage_controller.dart';
 import 'package:lekra/data/repositories/auth_repo.dart';
@@ -27,7 +26,6 @@ class Init {
       Get.lazyPut(() => PermissionController());
 
       // Get Controller's...
-      Get.lazyPut(() => DashBoardController());
       Get.lazyPut(() => AuthController(authRepo: Get.find()));
       Get.lazyPut(() => HomeController());
       Get.lazyPut(() => MassageController());

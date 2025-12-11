@@ -1,10 +1,10 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lekra/controllers/auth_controller.dart';
 import 'package:lekra/views/screens/auth_screens/onboarding_screen.dart';
 import 'package:lekra/views/screens/home/home_screen.dart';
-
 import '../../../services/constants.dart';
 import '../../base/custom_image.dart';
 
@@ -25,19 +25,20 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> checkAuth() async {
     await Future.delayed(const Duration(seconds: 2));
 
-    final authController = Get.find<AuthController>();
-    String token = authController.getUserToken();
+    User? currentUser = FirebaseAuth.instance.currentUser;
 
-    if (token.isNotEmpty) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+    if (currentUser != null) {
+      if (mounted) {
+        navigate(
+            context: context, page: const HomeScreen(), isRemoveUntil: true);
+      }
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-      );
+      if (mounted) {
+        navigate(
+            context: context,
+            page: const OnboardingScreen(),
+            isRemoveUntil: true);
+      }
     }
   }
 
