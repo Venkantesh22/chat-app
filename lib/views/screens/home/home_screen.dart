@@ -1,8 +1,12 @@
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lekra/controllers/auth_controller.dart';
 import 'package:lekra/controllers/home_controller.dart';
+import 'package:lekra/data/models/user_model.dart';
 import 'package:lekra/firebase/firebase_database/massage_database.dart';
 import 'package:lekra/services/constants.dart';
 import 'package:lekra/services/theme.dart';
@@ -23,10 +27,73 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        isLoading = true;
+      });
       final authController = Get.find<AuthController>();
       User? currentUser = FirebaseAuth.instance.currentUser;
 
       authController.fetchProfile(currentUser?.uid ?? "");
+      getAllUserData();
+      setState(() {
+        isLoading = false;
+      });
+    });
+  }
+
+  Stream? chatRoomStream;
+  bool isLoading = false;
+  getAllUserData() async {
+    log("---------- getAndSendMessage --------------");
+    chatRoomStream = await MassageDatabase().getAllUser();
+  }
+
+  Widget chatRoomList() {
+    return GetBuilder<HomeController>(builder: (homeController) {
+      return StreamBuilder(
+        stream: chatRoomStream,
+        builder: (context, AsyncSnapshot snapshot) {
+          return snapshot.hasData
+              ? ListView.separated(
+                  padding: EdgeInsets.zero,
+                  separatorBuilder: (_, __) => const SizedBox(height: 6),
+                  itemBuilder: (context, index) {
+                    DocumentSnapshot ds = snapshot.data.docs[index];
+                    UserModel user =
+                        UserModel.fromJson(ds.data() as Map<String, dynamic>);
+                    return GestureDetector(
+                      onTap: () async {
+                        var chatRoomId = await homeController.createChatRoom(
+                            Get.find<AuthController>().userModel?.name ?? "",
+                            user.name ?? "");
+
+                        Map<String, dynamic> chatInfoMap = {
+                          'users': [
+                            Get.find<AuthController>().userModel?.name ?? "",
+                            user.name ?? ""
+                          ],
+                        };
+
+                        await MassageDatabase()
+                            .createChatRoom(chatRoomId, chatInfoMap)
+                            .then((value) {
+                          if (value) {
+                            homeController.setSelectPersonForChat(value: user);
+                            navigate(context: context, page: ChatScreen());
+                          }
+                        });
+                      },
+                      child: PersonContainer(
+                        user: user,
+                      ),
+                    );
+                  },
+                  shrinkWrap: true,
+                  itemCount: snapshot.data.docs.length,
+                )
+              : Container();
+        },
+      );
     });
   }
 
@@ -41,6 +108,11 @@ class _HomeScreenState extends State<HomeScreen> {
               )
             : GetBuilder<HomeController>(
                 builder: (homeController) {
+                  if (isLoading) {
+                    Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -76,78 +148,84 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: primaryColor,
                                 ),
                               ),
-                              Expanded(
-                                child: Obx(() {
-                                  if (homeController.isSearching.value) {
-                                    return const Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
+                              homeController.searchController.text.isNotEmpty
+                                  ? Expanded(
+                                      child: Obx(() {
+                                        if (homeController.isSearching.value) {
+                                          return const Center(
+                                            child: CircularProgressIndicator(),
+                                          );
+                                        }
 
-                                  if (homeController.searchList.isEmpty) {
-                                    return Center(
-                                      child: Text(
-                                        homeController
-                                                .searchController.text.isEmpty
-                                            ? "Search for a person"
-                                            : "No users found",
-                                        style: Helper(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(color: greyText),
-                                      ),
-                                    );
-                                  }
+                                        if (homeController.searchList.isEmpty) {
+                                          return Center(
+                                            child: Text(
+                                              homeController.searchController
+                                                      .text.isEmpty
+                                                  ? "Search for a person"
+                                                  : "No users found",
+                                              style: Helper(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(color: greyText),
+                                            ),
+                                          );
+                                        }
 
-                                  return ListView.separated(
-                                    itemBuilder: (context, index) {
-                                      final user =
-                                          homeController.searchList[index];
-                                      return GestureDetector(
-                                        onTap: () async {
-                                          var chatRoomId = await homeController
-                                              .createChatRoom(
-                                                  Get.find<AuthController>()
-                                                          .userModel
-                                                          ?.name ??
-                                                      "",
-                                                  user.name ?? "");
+                                        return ListView.separated(
+                                          itemBuilder: (context, index) {
+                                            final user = homeController
+                                                .searchList[index];
+                                            return GestureDetector(
+                                              onTap: () async {
+                                                var chatRoomId = await homeController
+                                                    .createChatRoom(
+                                                        Get.find<AuthController>()
+                                                                .userModel
+                                                                ?.name ??
+                                                            "",
+                                                        user.name ?? "");
 
-                                          Map<String, dynamic> chatInfoMap = {
-                                            'users': [
-                                              Get.find<AuthController>()
-                                                      .userModel
-                                                      ?.name ??
-                                                  "",
-                                              user.name ?? ""
-                                            ],
-                                          };
+                                                Map<String, dynamic>
+                                                    chatInfoMap = {
+                                                  'users': [
+                                                    Get.find<AuthController>()
+                                                            .userModel
+                                                            ?.name ??
+                                                        "",
+                                                    user.name ?? ""
+                                                  ],
+                                                };
 
-                                          await MassageDatabase()
-                                              .createChatRoom(
-                                                  chatRoomId, chatInfoMap)
-                                              .then((value) {
-                                            if (value) {
-                                              homeController
-                                                  .setSelectPersonForChat(
-                                                      value: user);
-                                              navigate(
-                                                  context: context,
-                                                  page: ChatScreen());
-                                            }
-                                          });
-                                        },
-                                        child: PersonContainer(user: user),
-                                      );
-                                    },
-                                    separatorBuilder: (_, __) =>
-                                        const SizedBox(height: 6),
-                                    itemCount: homeController.searchList.length,
-                                    physics:
-                                        const AlwaysScrollableScrollPhysics(),
-                                  );
-                                }),
-                              ),
+                                                await MassageDatabase()
+                                                    .createChatRoom(
+                                                        chatRoomId, chatInfoMap)
+                                                    .then((value) {
+                                                  if (value) {
+                                                    homeController
+                                                        .setSelectPersonForChat(
+                                                            value: user);
+                                                    navigate(
+                                                        context: context,
+                                                        page: ChatScreen());
+                                                  }
+                                                });
+                                              },
+                                              child: PersonContainer(
+                                                user: user,
+                                              ),
+                                            );
+                                          },
+                                          separatorBuilder: (_, __) =>
+                                              const SizedBox(height: 6),
+                                          itemCount:
+                                              homeController.searchList.length,
+                                          physics:
+                                              const AlwaysScrollableScrollPhysics(),
+                                        );
+                                      }),
+                                    )
+                                  : Expanded(child: chatRoomList()),
                             ],
                           ),
                         ),

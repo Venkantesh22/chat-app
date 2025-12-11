@@ -64,12 +64,15 @@ class MassageDatabase {
   }
 
   Future<Stream<QuerySnapshot>> getChatRoomMessage(chatRoomId) async {
-    
     return await firebase
         .collection("Chatroom")
         .doc(chatRoomId)
         .collection("chats")
         .orderBy('time', descending: true)
         .snapshots();
+  }
+
+  Future<Stream<QuerySnapshot>> getAllUser() async {
+    return await firebase.collection("users").snapshots();
   }
 }

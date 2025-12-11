@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lekra/data/models/user_model.dart';
 import 'package:lekra/services/constants.dart';
-import 'package:lekra/services/date_formatters_and_converters.dart';
 import 'package:lekra/services/theme.dart';
 import 'package:lekra/views/base/custom_image.dart';
 
@@ -53,10 +52,10 @@ class PersonContainer extends StatelessWidget {
                             fontWeight: FontWeight.w800,
                           ),
                     ),
-                    Text(
-                      DateFormatters().hMA.format(DateTime.now()),
-                      style: Helper(context).textTheme.bodySmall?.copyWith(),
-                    )
+                    // Text(
+                    //   !isSearch ? time ?? "" : "",
+                    //   style: Helper(context).textTheme.bodySmall?.copyWith(),
+                    // )
                   ],
                 ),
                 const SizedBox(height: 4),
