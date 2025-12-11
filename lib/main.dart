@@ -1,4 +1,3 @@
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:lekra/services/constants.dart';
@@ -10,8 +9,8 @@ import 'services/init.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Init().initialize();
   await Firebase.initializeApp();
+  await Init().initialize();
 
   runApp(const MyApp());
 }
